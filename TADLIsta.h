@@ -3,7 +3,7 @@ struct registro
     int simbolo;
     char palavra[20];
     int frequencia;
-    char codigo;
+    char codigo[256];
 };
 typedef struct registro Registro;
 
@@ -14,12 +14,12 @@ struct lista
 };
 typedef struct lista Lista;
 
-void init(Lista **l)
+void initLista(Lista **l)
 {
     *l = NULL;
 }
 
-Lista *novoNo(Registro reg)
+Lista *novoNoLista(Registro reg)
 {
     Lista *novo = (Lista *)malloc(sizeof(Lista));
     novo->registro = reg;
@@ -27,9 +27,9 @@ Lista *novoNo(Registro reg)
     return novo;
 }
 
-void adicionar(Lista **l, Registro reg)
+void adicionarLista(Lista **l, Registro reg)
 {
-    Lista *novo = novoNo(reg);
+    Lista *novo = novoNoLista(reg);
     Lista *aux;
     if (*l == NULL)
         *l = novo;
@@ -71,4 +71,13 @@ void remover(Lista **l)
         *l = (*l)->prox;
         free(aux);
     }
+}
+
+Lista * buscarLista(Lista *lista, int simbolo)
+{
+    while(lista!=NULL && lista->registro.simbolo!=simbolo)
+        lista = lista->prox;
+    if(lista!=NULL)
+        return lista;
+    return NULL;
 }
