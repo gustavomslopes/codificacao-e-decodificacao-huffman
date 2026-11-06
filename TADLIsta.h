@@ -27,7 +27,7 @@ Lista *novoNoLista(Registro reg)
     return novo;
 }
 
-void adicionarLista(Lista **l, Registro reg)
+void adicionarListaOrd(Lista **l, Registro reg)
 {
     Lista *novo = novoNoLista(reg);
     Lista *aux;
@@ -48,6 +48,21 @@ void adicionarLista(Lista **l, Registro reg)
             novo->prox = aux->prox;
             aux->prox = novo;
         }
+    }
+}
+
+void adicionarLista(Lista **l, Registro reg)
+{
+    Lista *novo = novoNoLista(reg);
+    Lista *aux;
+    if (*l == NULL)
+        *l = novo;
+    else
+    {
+        aux = *l;
+        while (aux->prox != NULL)
+            aux = aux->prox;
+        aux->prox = novo;
     }
 }
 
@@ -73,11 +88,11 @@ void remover(Lista **l)
     }
 }
 
-Lista * buscarLista(Lista *lista, int simbolo)
+Lista *buscarLista(Lista *lista, int simbolo)
 {
-    while(lista!=NULL && lista->registro.simbolo!=simbolo)
+    while (lista != NULL && lista->registro.simbolo != simbolo)
         lista = lista->prox;
-    if(lista!=NULL)
+    if (lista != NULL)
         return lista;
     return NULL;
 }

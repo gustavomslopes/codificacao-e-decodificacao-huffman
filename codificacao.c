@@ -6,6 +6,18 @@
 #include "TADArvore.h"
 #include "TADFloresta.h"
 
+struct bits
+{
+    unsigned char b7 : 1;
+    unsigned char b6 : 1;
+    unsigned char b5 : 1;
+    unsigned char b4 : 1;
+    unsigned char b3 : 1;
+    unsigned char b2 : 1;
+    unsigned char b1 : 1;
+    unsigned char b0 : 1;
+};
+
 void separarTexto(Lista **lista)
 {
     FILE *arq = fopen("texto.txt", "r");
@@ -20,11 +32,11 @@ void separarTexto(Lista **lista)
         {
             palavra[pos] = '\0';
             strcpy(reg.palavra, strupr(palavra));
-            adicionarLista(&*lista, reg);
+            adicionarListaOrd(&*lista, reg);
             palavra[0] = ' ';
             palavra[1] = '\0';
             strcpy(reg.palavra, palavra);
-            adicionarLista(&*lista, reg);
+            adicionarListaOrd(&*lista, reg);
             pos = 0;
         }
         else
@@ -33,7 +45,7 @@ void separarTexto(Lista **lista)
     }
     palavra[pos] = '\0';
     strcpy(reg.palavra, strupr(palavra));
-    adicionarLista(&*lista, reg);
+    adicionarListaOrd(&*lista, reg);
     fclose(arq);
 }
 
@@ -61,13 +73,13 @@ void registrarFrequencias(Lista *l)
     }
 }
 
-int buscarPalavra(Lista *lista, char palavra[])
+Lista *buscarPalavra(Lista *lista, char palavra[])
 {
     while (lista != NULL && strcmp(palavra, lista->registro.palavra) != 0)
         lista = lista->prox;
     if (lista == NULL)
-        return 0;
-    return 1;
+        return NULL;
+    return lista;
 }
 
 void preencherListaOrd(Lista **lista, Lista *palavras)
@@ -78,9 +90,8 @@ void preencherListaOrd(Lista **lista, Lista *palavras)
         if (!buscarPalavra(*lista, palavras->registro.palavra))
         {
             palavras->registro.simbolo = simbolo++;
-            adicionarLista(&*lista, palavras->registro);
+            adicionarListaOrd(&*lista, palavras->registro);
         }
-
         palavras = palavras->prox;
     }
 }
@@ -144,15 +155,91 @@ void codificarPalavras(Tree *raiz, Lista *lista, char d[], int *t)
     }
 }
 
+void separarFrase(Lista **lista, char frase[])
+{
+    int pos = 0, i = 0;
+    Registro reg;
+    char palavra[20];
+
+    while (i < strlen(frase))
+    {
+        if (frase[i] == ' ')
+        {
+            palavra[pos] = '\0';
+            strcpy(reg.palavra, strupr(palavra));
+            adicionarLista(&*lista, reg);
+            palavra[0] = ' ';
+            palavra[1] = '\0';
+            strcpy(reg.palavra, palavra);
+            adicionarLista(&*lista, reg);
+            pos = 0;
+        }
+        else
+            palavra[pos++] = frase[i];
+        i++;
+    }
+    palavra[pos] = '\0';
+    strcpy(reg.palavra, strupr(palavra));
+    adicionarLista(&*lista, reg);
+}
+
+void gravarBinario(char frase[], Lista *lista)
+{
+    FILE *arq = fopen("binario.dat", "wb+");
+    Lista *aux, *palavra;
+    struct bits b;
+    char codigo[256], carac;
+    char codigoFinal[1000];
+    int pos=0, i, dif;
+    initLista(&aux);
+    separarFrase(&aux, frase);
+    while (aux != NULL)
+    {
+        palavra = buscarPalavra(lista, aux->registro.palavra);
+        strcpy(codigo, palavra->registro.codigo);
+        for(i=0; i<strlen(codigo); i++)
+            codigoFinal[pos++] = codigo[i];
+        aux = aux->prox;
+    }
+    codigoFinal[pos] = '\0';
+    
+    if(strlen(codigoFinal)%8!=0)
+    {
+        dif = 8 - strlen(codigoFinal)%8;
+        pos = strlen(codigoFinal);
+        for(i=0; i<dif; i++)
+            codigoFinal[pos++] = '0';
+    }
+    printf("%s", codigoFinal);
+    pos=0;
+    while(pos<strlen(codigoFinal))
+    {
+        b.b0 = codigoFinal[pos++];
+        b.b1 = codigoFinal[pos++]; 
+        b.b2 = codigoFinal[pos++];
+        b.b3 = codigoFinal[pos++];
+        b.b4 = codigoFinal[pos++];
+        b.b5 = codigoFinal[pos++];
+        b.b6 = codigoFinal[pos++];
+        b.b7 = codigoFinal[pos++];
+        fwrite(&b, sizeof(struct bits), 1, arq);
+
+    }
+    rewind(arq);
+    fread(&carac, sizeof(char), 1, arq);
+    while (!feof(arq))
+        fread(&carac, sizeof(char), 1, arq);
+
+    fclose(arq);
+}
+
 int main()
 {
     Lista *palavras, *lista, *aux;
     int n, t;
-    char d[256];
+    char d[256], frase[] = "amar e viver e amar Cada um tera um tempo para crescer";
     Tree *raiz;
-    initLista(&palavras);
-    initLista(&lista);
-    initArv(&raiz);
+    initLista(&palavras); initLista(&lista); initArv(&raiz);
     separarTexto(&palavras);
     registrarFrequencias(palavras);
     preencherListaOrd(&lista, palavras);
@@ -169,6 +256,7 @@ int main()
     printf("\n\n\t\t\tARVORE\n");
     n = -1;
     exibeArv(raiz, &n);
+    gravarBinario(frase, lista);
 
     return 0;
 }
