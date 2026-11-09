@@ -66,28 +66,6 @@ void adicionarLista(Lista **l, Registro reg)
     }
 }
 
-int tamanho(Lista *l)
-{
-    int tam = 0;
-    while (l != NULL)
-    {
-        tam++;
-        l = l->prox;
-    }
-    return tam;
-}
-
-void remover(Lista **l)
-{
-    Lista *aux;
-    if (*l != NULL)
-    {
-        aux = *l;
-        *l = (*l)->prox;
-        free(aux);
-    }
-}
-
 Lista *buscarLista(Lista *lista, int simbolo)
 {
     while (lista != NULL && lista->registro.simbolo != simbolo)
@@ -95,4 +73,14 @@ Lista *buscarLista(Lista *lista, int simbolo)
     if (lista != NULL)
         return lista;
     return NULL;
+}
+
+void excluirLista(Lista **lista)
+{
+    if(*lista!=NULL)
+    {
+        excluirLista(&(*lista)->prox);
+        free(*lista);
+        *lista = NULL;
+    }
 }

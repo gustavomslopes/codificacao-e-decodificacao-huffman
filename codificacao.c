@@ -155,6 +155,21 @@ void codificarPalavras(Tree *raiz, Lista *lista, char d[], int *t)
     }
 }
 
+void gravarListaArq(Lista *lista)
+{
+    FILE *arq = fopen("lista.dat", "wb");
+    if(arq!=NULL)
+    {
+        while(lista!=NULL)
+        {
+            fwrite(&lista->registro, sizeof(Registro), 1, arq);
+            lista = lista->prox;
+        }
+    }
+
+    fclose(arq);
+}
+
 void separarFrase(Lista **lista, char frase[])
 {
     int pos = 0, i = 0;
@@ -231,6 +246,7 @@ void gravarBinario(char frase[], Lista *lista)
         fread(&carac, sizeof(char), 1, arq);
 
     fclose(arq);
+    excluirLista(&aux);
 }
 
 int main()
@@ -246,6 +262,7 @@ int main()
     criarArvore(lista, &raiz);
     t = -1;
     codificarPalavras(raiz, lista, d, &t);
+    gravarListaArq(lista);
     aux = lista;
     printf("\t\t\tTABELA DE REGISTROS\n");
     while (aux != NULL)
@@ -257,6 +274,9 @@ int main()
     n = -1;
     exibeArv(raiz, &n);
     gravarBinario(frase, lista);
+    excluirLista(&lista);
+    excluirLista(&palavras);
+    excluirArv(&raiz);
 
     return 0;
 }

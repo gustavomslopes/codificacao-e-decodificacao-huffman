@@ -36,3 +36,22 @@ void exibeArv(Tree *raiz, int *n)
         (*n)--;
     }
 }
+
+void excluirArv(Tree **raiz)
+{
+    if(*raiz!=NULL)
+    {
+        excluirArv(&(*raiz)->dir);
+        excluirArv(&(*raiz)->esq);
+        free(*raiz);
+        *raiz = NULL;
+    }
+}
+
+int folha(Tree *raiz)
+{
+    if(raiz->dir == NULL && raiz->esq == NULL)
+        return 1;
+
+    return 0;
+}
